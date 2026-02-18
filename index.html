@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEGIS — Accident Prevention & Response System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+<style>
+:root{
+  --bg:#07090d;--bg2:#0b0e14;--bg3:#10141c;--bg4:#161c28;
+  --card:#0e1219;--card2:#131925;
+  --border:#1c2736;--border2:#222f42;
+  --accent:#00c9a7;--accent2:#07e8c0;
+  --danger:#f03a5f;--danger2:#ff6680;
+  --warn:#f0b800;--warn2:#ffd040;
+  --info:#3090f0;--info2:#60b4ff;
+  --text:#c4d4e4;--text2:#7a9ab5;--text3:#445a70;--white:#e6f2ff;
+  --fd:'Barlow Condensed',sans-serif;
+  --fb:'IBM Plex Sans',sans-serif;
+  --fm:'IBM Plex Mono',monospace;
+  --r:12px;--r2:8px;
+  --ga:0 0 22px rgba(0,201,167,.16);
+  --gd:0 0 22px rgba(240,58,95,.18);
+  --e:.2s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:14px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+button{cursor:pointer;font-family:inherit;border:none;outline:none;background:none}
+input,select,textarea{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,201,167,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,201,167,.018) 1px,transparent 1px);
+  background-size:52px 52px;animation:gf 9s ease-in-out infinite}
+@keyframes gf{0%,100%{opacity:.5}50%{opacity:1}}
+.bg-glow{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 38% at 18% 16%,rgba(0,201,167,.055) 0%,transparent 68%),
+             radial-gradient(ellipse 45% 45% at 82% 82%,rgba(240,58,95,.045) 0%,transparent 68%)}
+.app-shell{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+.top-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:62px;
+  background:rgba(7,9,13,.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mk{width:34px;height:34px;background:linear-gradient(140deg,var(--accent),var(--info));
+  border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;
+  box-shadow:var(--ga);animation:mp 3.5s ease-in-out infinite}
+@keyframes mp{0%,100%{box-shadow:0 0 14px rgba(0,201,167,.28)}50%{box-shadow:0 0 30px rgba(0,201,167,.55)}}
+.logo-txt{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--white);letter-spacing:.06em;text-transform:uppercase}
+.logo-txt em{color:var(--accent);font-style:normal}
+.hdr-ctr{display:flex;align-items:center;gap:8px}
+.spill{display:flex;align-items:center;gap:7px;padding:4px 12px;border-radius:99px;font-family:var(--fm);font-size:10.5px;letter-spacing:.05em}
+.spill.ok{background:rgba(0,201,167,.07);border:1px solid rgba(0,201,167,.18);color:var(--accent)}
+.spill.err{background:rgba(240,58,95,.07);border:1px solid rgba(240,58,95,.22);color:var(--danger)}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.spill.ok .sdot{background:var(--accent);animation:bk 1.8s ease-in-out infinite}
+.spill.err .sdot{background:var(--danger);animation:bk .9s ease-in-out infinite}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.15}}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.hb{padding:7px 16px;border-radius:var(--r2);font-family:var(--fb);font-size:12px;font-weight:600;letter-spacing:.05em;transition:var(--e)}
+.hb.ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.hb.ghost:hover{border-color:var(--accent);color:var(--accent);box-shadow:var(--ga)}
+.hb.solid{background:var(--accent);color:#000;font-weight:700;border:1px solid transparent}
+.hb.solid:hover{background:var(--accent2);box-shadow:var(--ga);transform:translateY(-1px)}
+.nw{position:relative}
+.nb{width:36px;height:36px;border-radius:var(--r2);background:var(--bg3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:15px;transition:var(--e)}
+.nb:hover{border-color:var(--border2);background:var(--bg4)}
+.ndot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--bg)}
+
+/* NAV */
+.nav-bar{display:flex;align-items:center;gap:2px;padding:0 32px;height:50px;
+  background:rgba(11,14,20,.65);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);overflow-x:auto}
+.nav-bar::-webkit-scrollbar{height:0}
+.nt{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:var(--r2);
+  font-family:var(--fb);font-size:13px;font-weight:500;color:var(--text3);white-space:nowrap;
+  border:1px solid transparent;transition:var(--e);cursor:pointer}
+.nt:hover{color:var(--text2);background:rgba(255,255,255,.035)}
+.nt.active{color:var(--accent);background:rgba(0,201,167,.07);border-color:rgba(0,201,167,.18)}
+.ti{font-size:15px}
+.tbadge{padding:1px 6px;border-radius:99px;background:var(--danger);color:#fff;
+  font-family:var(--fm);font-size:9.5px;font-weight:600}
+
+/* MAIN */
+.mc{flex:1;padding:26px 32px;max-width:1640px;width:100%;margin:0 auto}
+.sec{display:none}.sec.active{display:block}
+.seh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:14px}
+.set{font-family:var(--fd);font-size:30px;font-weight:800;color:var(--white);letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.set em{color:var(--accent);font-style:normal}
+.ses{font-family:var(--fm);font-size:11px;color:var(--text3);margin-top:5px;letter-spacing:.06em}
+.sea{display:flex;gap:8px;flex-wrap:wrap}
+
+/* STAT CARDS */
+.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:24px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 20px;position:relative;overflow:hidden;cursor:default;transition:var(--e);will-change:transform}
+.sc::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,201,167,.035) 0%,transparent 55%);pointer-events:none}
+.sc:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.sc.dng{border-color:rgba(240,58,95,.22)}.sc.dng::after{background:linear-gradient(135deg,rgba(240,58,95,.05) 0%,transparent 55%)}
+.sc.wrn{border-color:rgba(240,184,0,.18)}.sc.wrn::after{background:linear-gradient(135deg,rgba(240,184,0,.04) 0%,transparent 55%)}
+.sc.inf{border-color:rgba(48,144,240,.18)}.sc.inf::after{background:linear-gradient(135deg,rgba(48,144,240,.04) 0%,transparent 55%)}
+.sl{font-family:var(--fm);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.sv{font-family:var(--fd);font-size:34px;font-weight:800;color:var(--white);line-height:1;letter-spacing:-.01em}
+.sv.a{color:var(--accent)}.sv.d{color:var(--danger)}.sv.w{color:var(--warn)}.sv.i{color:var(--info)}
+.sd{display:flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--fm);font-size:10px}
+.sd.up{color:var(--danger)}.sd.dn{color:var(--accent)}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.gm{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+.gm2{display:grid;grid-template-columns:1fr 2fr;gap:18px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.ct{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-size:14px;font-weight:700;color:var(--white);letter-spacing:.04em;text-transform:uppercase}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dg{background:var(--accent)}.dr{background:var(--danger);animation:bk 1.2s infinite}.dy{background:var(--warn)}
+.cb{padding:18px}
+
+/* CCTV FEEDS */
+.fg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.fi{position:relative;border-radius:var(--r2);overflow:hidden;aspect-ratio:16/9;
+  background:#060a10;border:1px solid var(--border);cursor:pointer;transition:border-color var(--e),box-shadow var(--e)}
+.fi:hover{border-color:rgba(0,201,167,.5);box-shadow:var(--ga)}
+.fi.af{border-color:rgba(240,58,95,.55);animation:ar 1.6s ease-in-out infinite}
+@keyframes ar{0%,100%{box-shadow:0 0 0 0 rgba(240,58,95,.4)}50%{box-shadow:0 0 0 5px rgba(240,58,95,0)}}
+.fc{width:100%;height:100%;display:block;image-rendering:optimizeSpeed}
+.fh{position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px)}
+.fcr{position:absolute;width:13px;height:13px;opacity:.65}
+.fcr.tl{top:7px;left:7px;border-top:2px solid var(--accent);border-left:2px solid var(--accent)}
+.fcr.tr{top:7px;right:7px;border-top:2px solid var(--accent);border-right:2px solid var(--accent)}
+.fcr.bl{bottom:7px;left:7px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent)}
+.fcr.br{bottom:7px;right:7px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent)}
+.fbw{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:5px;pointer-events:none}
+.flv{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.62);backdrop-filter:blur(4px);
+  padding:2px 8px;border-radius:3px;font-family:var(--fm);font-size:10px;color:var(--danger);letter-spacing:.06em}
+.flv::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--danger);animation:bk 1s infinite;display:inline-block}
+.fci{background:rgba(0,0,0,.62);backdrop-filter:blur(4px);padding:2px 8px;border-radius:3px;
+  font-family:var(--fm);font-size:10px;color:rgba(180,220,200,.85);letter-spacing:.06em}
+.fab{position:absolute;top:8px;right:8px;background:var(--danger);color:#fff;
+  padding:2px 8px;border-radius:3px;font-family:var(--fm);font-size:10px;font-weight:600;letter-spacing:.06em;
+  animation:pi .3s cubic-bezier(.2,.8,.3,1.2);pointer-events:none}
+@keyframes pi{from{transform:scale(0)}to{transform:scale(1)}}
+.ff{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.78));
+  padding:16px 10px 8px;font-family:var(--fm);font-size:10px;color:rgba(180,210,200,.75);letter-spacing:.04em;pointer-events:none}
+.feh{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.45);font-family:var(--fb);font-size:12px;color:#fff;font-weight:500;
+  opacity:0;transition:opacity var(--e);letter-spacing:.03em}
+.fi:hover .feh{opacity:1}
+
+/* SPEED */
+.spl{padding:2px 16px 14px}
+.spi{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.spi:last-child{border-bottom:none}
+.spp{font-family:var(--fm);font-size:11px;font-weight:500;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:3px;padding:3px 8px;min-width:92px;text-align:center;color:var(--white);letter-spacing:.05em}
+.spt{flex:1;height:5px;background:var(--bg4);border-radius:99px;overflow:hidden}
+.spf{height:100%;border-radius:99px;transition:width 1.1s ease}
+.spf.safe{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.spf.warn{background:linear-gradient(90deg,var(--warn),var(--warn2))}
+.spf.dng{background:linear-gradient(90deg,var(--danger),var(--danger2))}
+.spn{font-family:var(--fm);font-size:12px;font-weight:500;min-width:62px;text-align:right;letter-spacing:.03em}
+.spn.safe{color:var(--accent)}.spn.warn{color:var(--warn)}.spn.dng{color:var(--danger)}
+
+/* NEWS */
+.nf{padding:0 4px}
+.ni{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--e)}
+.ni:hover{background:rgba(255,255,255,.018)}
+.ni:last-child{border-bottom:none}
+.nd{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.nd.dng{background:var(--danger);box-shadow:0 0 7px rgba(240,58,95,.55)}
+.nd.wrn{background:var(--warn);box-shadow:0 0 7px rgba(240,184,0,.45)}
+.nd.inf{background:var(--info);box-shadow:0 0 7px rgba(48,144,240,.4)}
+.nd.ok{background:var(--accent)}
+.ntitle{font-size:13px;color:var(--white);font-weight:500;margin-bottom:3px;line-height:1.4}
+.nmeta{font-family:var(--fm);font-size:10.5px;color:var(--text3);display:flex;gap:10px;align-items:center}
+.ntag{padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;font-family:var(--fm);letter-spacing:.05em}
+.ntag.critical{background:rgba(240,58,95,.14);color:var(--danger)}
+.ntag.moderate{background:rgba(240,184,0,.11);color:var(--warn)}
+.ntag.minor{background:rgba(48,144,240,.1);color:var(--info)}
+.ntag.clear{background:rgba(0,201,167,.1);color:var(--accent)}
+
+/* MAP */
+.mw{position:relative;height:290px;background:var(--bg3);overflow:hidden}
+.mcan{width:100%;height:100%}
+.mov{position:absolute;inset:0;pointer-events:none}
+.mp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;pointer-events:all}
+.mpd{width:13px;height:13px;border-radius:50%;border:2px solid var(--bg);position:relative}
+.mpd::after{content:'';position:absolute;inset:-5px;border-radius:50%;opacity:.3;animation:rp 2s ease-out infinite}
+.mp.dng .mpd{background:var(--danger)}.mp.dng .mpd::after{background:var(--danger)}
+.mp.wrn .mpd{background:var(--warn)}.mp.wrn .mpd::after{background:var(--warn)}
+.mp.ok .mpd{background:var(--accent)}.mp.ok .mpd::after{background:var(--accent)}
+@keyframes rp{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.8);opacity:0}}
+.mpl{font-family:var(--fm);font-size:9px;background:rgba(0,0,0,.72);padding:1px 5px;border-radius:2px;margin-top:3px;white-space:nowrap;color:var(--text);letter-spacing:.04em}
+
+/* ALERT CARDS */
+.al{display:flex;flex-direction:column;gap:12px}
+.ac{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:var(--e);animation:su .35s ease}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ac:hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.ac.critical{border-left:3px solid var(--danger)}
+.ac.moderate{border-left:3px solid var(--warn)}
+.ac.minor{border-left:3px solid var(--info)}
+.ach{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,.018)}
+.aid{font-family:var(--fm);font-size:10.5px;color:var(--text3);letter-spacing:.07em}
+.abg{padding:2px 9px;border-radius:3px;font-family:var(--fm);font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase}
+.abg.critical{background:rgba(240,58,95,.14);color:var(--danger);border:1px solid rgba(240,58,95,.28)}
+.abg.moderate{background:rgba(240,184,0,.1);color:var(--warn);border:1px solid rgba(240,184,0,.22)}
+.abg.minor{background:rgba(48,144,240,.1);color:var(--info);border:1px solid rgba(48,144,240,.2)}
+.acb{padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:12px}
+.aloc{font-family:var(--fd);font-size:16px;font-weight:700;color:var(--white);margin-bottom:5px;letter-spacing:.03em}
+.atxt{font-size:12px;color:var(--text2);line-height:1.7}
+.atm{font-family:var(--fm);font-size:10.5px;color:var(--text3);margin-top:7px}
+.aacts{display:flex;flex-direction:column;gap:6px;justify-content:center;min-width:110px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 14px;
+  border-radius:var(--r2);font-family:var(--fb);font-size:12px;font-weight:600;letter-spacing:.04em;
+  transition:var(--e);cursor:pointer;border:1px solid transparent}
+.bsm{padding:5px 11px;font-size:11px}
+.ba{background:rgba(0,201,167,.1);color:var(--accent);border-color:rgba(0,201,167,.22)}
+.ba:hover{background:var(--accent);color:#000;box-shadow:var(--ga)}
+.bd{background:rgba(240,58,95,.09);color:var(--danger);border-color:rgba(240,58,95,.22)}
+.bd:hover{background:var(--danger);color:#fff;box-shadow:var(--gd)}
+.bg{background:transparent;color:var(--text2);border-color:var(--border)}
+.bg:hover{border-color:var(--border2);color:var(--text)}
+.bw{background:rgba(240,184,0,.07);color:var(--warn);border-color:rgba(240,184,0,.2)}
+.bw:hover{background:var(--warn);color:#000}
+
+/* DISPATCH */
+.dg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding:14px}
+.du{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:13px;transition:var(--e)}
+.du:hover{border-color:var(--border2);background:var(--bg4)}
+.du.on{border-color:var(--accent);background:rgba(0,201,167,.05)}
+.du.sent{border-color:var(--warn);background:rgba(240,184,0,.04)}
+.dic{font-size:22px;margin-bottom:7px}
+.dn{font-family:var(--fb);font-size:12px;font-weight:600;color:var(--white);margin-bottom:2px}
+.ds{font-family:var(--fm);font-size:10px}
+.ds.online{color:var(--accent)}.ds.dispatched{color:var(--warn)}.ds.offline{color:var(--text3)}
+.db{margin-top:9px;width:100%;padding:5px;border-radius:4px;font-family:var(--fm);font-size:10px;
+  font-weight:600;letter-spacing:.04em;background:rgba(0,201,167,.07);color:var(--accent);
+  border:1px solid rgba(0,201,167,.18);transition:var(--e);cursor:pointer}
+.db:hover{background:var(--accent);color:#000}
+.db.sent{background:rgba(240,184,0,.07);color:var(--warn);border-color:rgba(240,184,0,.18)}
+.db.sent:hover{background:var(--warn);color:#000}
+
+/* TIMELINE */
+.tl{position:relative;padding-left:22px}
+.tl::before{content:'';position:absolute;left:6px;top:6px;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent),rgba(0,201,167,.1))}
+.tli{position:relative;margin-bottom:16px}
+.tld{position:absolute;left:-19px;top:5px;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg);z-index:1}
+.tlt{font-family:var(--fm);font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.05em}
+.tlb{font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:9px 12px;line-height:1.5}
+
+/* REPORTS */
+.rc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px;animation:su .4s ease}
+.rch{background:linear-gradient(135deg,rgba(0,201,167,.07),rgba(48,144,240,.05));padding:18px 22px;border-bottom:1px solid var(--border)}
+.rid{font-family:var(--fm);font-size:10.5px;color:var(--accent);margin-bottom:7px;letter-spacing:.08em}
+.rtl{font-family:var(--fd);font-size:19px;font-weight:700;color:var(--white);margin-bottom:8px;letter-spacing:.03em;text-transform:uppercase}
+.rmr{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+.rm{display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:11px;color:var(--text3)}
+.rm strong{color:var(--text2);font-weight:500}
+.rbody{padding:20px 22px}
+.rs{font-family:var(--fm);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.rs::after{content:'';flex:1;height:1px;background:var(--border)}
+.rtx{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:16px}
+.ml{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.ms{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;background:rgba(0,0,0,.18);border-radius:var(--r2);border-left:2px solid var(--border2)}
+.ms.prev{border-left-color:var(--accent)}.ms.remed{border-left-color:var(--info)}
+.mic{font-size:15px;flex-shrink:0;margin-top:1px}
+.mt{font-size:12px;color:var(--text2);line-height:1.6}
+.ftg{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:8px;margin-bottom:16px}
+.fth{border-radius:var(--r2);overflow:hidden;aspect-ratio:16/9;background:var(--bg3);border:1px solid var(--border);cursor:pointer;position:relative;transition:var(--e)}
+.fth:hover{border-color:var(--accent);transform:scale(1.03);box-shadow:var(--ga)}
+.ftc{width:100%;height:100%;display:block}
+.ftl{position:absolute;bottom:3px;left:4px;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:2px;font-family:var(--fm);font-size:9px;color:var(--text2)}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{border-bottom:2px solid var(--border2)}
+thead th{padding:9px 13px;text-align:left;font-family:var(--fm);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);white-space:nowrap;font-weight:500}
+tbody tr{border-bottom:1px solid var(--border);transition:background var(--e)}
+tbody tr:hover{background:rgba(255,255,255,.018)}
+tbody td{padding:10px 13px;color:var(--text2);vertical-align:middle}
+.tid{font-family:var(--fm);color:var(--accent);font-size:10.5px}
+.tbold{color:var(--white);font-weight:500}
+.sw{display:flex;align-items:center;gap:7px}
+.sp{width:38px;font-family:var(--fm);font-size:11px;text-align:right;flex-shrink:0}
+.stk{flex:1;height:4px;background:var(--bg4);border-radius:99px;overflow:hidden;min-width:50px}
+.sf{height:100%;border-radius:99px}
+.sf.hi{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.sf.md{background:linear-gradient(90deg,var(--warn),var(--warn2))}
+.sf.lo{background:linear-gradient(90deg,var(--danger),var(--danger2))}
+
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-family:var(--fm);font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.bdg.critical{background:rgba(240,58,95,.14);color:var(--danger)}
+.bdg.moderate{background:rgba(240,184,0,.1);color:var(--warn)}
+.bdg.minor{background:rgba(48,144,240,.1);color:var(--info)}
+.bdg.resolved{background:rgba(0,201,167,.1);color:var(--accent)}
+.bdg.active{background:rgba(240,58,95,.1);color:var(--danger)}
+.bdg.closed{background:rgba(100,120,140,.1);color:var(--text3)}
+
+/* CHARTS */
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ccb{padding:14px;position:relative;height:256px}
+
+/* FORMS */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.fl{font-family:var(--fm);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)}
+.fi2,.fsel,.fta{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);
+  padding:9px 13px;font-size:13px;color:var(--text);transition:border-color var(--e);width:100%}
+.fi2:focus,.fsel:focus,.fta:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,201,167,.07)}
+.fta{resize:vertical;min-height:90px;line-height:1.6}
+.fsel option{background:var(--bg2)}
+.uz{border:2px dashed var(--border2);border-radius:var(--r2);padding:26px;text-align:center;cursor:pointer;transition:var(--e);background:rgba(0,0,0,.15)}
+.uz:hover{border-color:var(--accent);background:rgba(0,201,167,.035)}
+.ui{font-size:28px;margin-bottom:7px}
+.ut{font-size:13px;color:var(--text2)}
+.us{font-family:var(--fm);font-size:10px;color:var(--text3);margin-top:3px}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(7px);
+  z-index:900;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .22s ease}
+.mo.open{opacity:1;pointer-events:all}
+.md{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);
+  width:min(700px,94vw);max-height:84vh;overflow-y:auto;
+  transform:translateY(16px) scale(.97);transition:transform .22s ease}
+.mo.open .md{transform:translateY(0) scale(1)}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+  border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:1}
+.mtt{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--white);letter-spacing:.04em;text-transform:uppercase}
+.mx{width:30px;height:30px;border-radius:5px;background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);font-size:17px;display:flex;align-items:center;justify-content:center;transition:var(--e);cursor:pointer}
+.mx:hover{border-color:var(--danger);color:var(--danger)}
+.mb2{padding:20px}
+
+/* TOAST */
+.tw2{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r2);
+  padding:11px 16px;min-width:270px;max-width:360px;display:flex;align-items:flex-start;gap:10px;
+  animation:tin .3s ease;pointer-events:all;box-shadow:0 8px 28px rgba(0,0,0,.5);border-left:3px solid var(--border2)}
+@keyframes tin{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:translateX(0)}}
+.toast.out{animation:tout .28s ease forwards}
+@keyframes tout{to{opacity:0;transform:translateX(32px)}}
+.ttico{font-size:17px;flex-shrink:0}
+.ttit{font-family:var(--fb);font-size:12.5px;font-weight:600;color:var(--white);margin-bottom:2px}
+.tmsg{font-family:var(--fm);font-size:10.5px;color:var(--text3);line-height:1.5}
+
+/* UTILS */
+.mb20{margin-bottom:20px}.mb16{margin-bottom:16px}.mb12{margin-bottom:12px}
+.mt16{margin-top:16px}.frow{display:flex;align-items:center}.fbet{display:flex;align-items:center;justify-content:space-between}
+.g8{gap:8px}.g12{gap:12px}.mono{font-family:var(--fm)}.sm{font-size:11px}.mut{color:var(--text3)}
+.p16{padding:16px}.p18{padding:18px}
+
+/* RESPONSIVE */
+@media(max-width:1080px){.g2,.gm,.gm2,.cr{grid-template-columns:1fr}}
+@media(max-width:760px){
+  .top-hdr{padding:0 14px}.logo-txt{font-size:18px}.hdr-ctr{display:none}.hb.ghost{display:none}
+  .nav-bar{padding:0 10px}.mc{padding:16px 14px}
+  .sr{grid-template-columns:repeat(2,1fr)}.fg{grid-template-columns:1fr}
+  .dg2{grid-template-columns:repeat(2,1fr)}.fgrid{grid-template-columns:1fr}
+  .acb{grid-template-columns:1fr}.aacts{flex-direction:row}.set{font-size:24px}
+}
+@media(max-width:440px){.sr{grid-template-columns:1fr}.dg2{grid-template-columns:1fr}.rmr{flex-direction:column;gap:6px}}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div><div class="bg-glow"></div>
+<div class="app-shell">
+
+<header class="top-hdr">
+  <div class="logo">
+    <div class="logo-mk">🛡</div>
+    <div class="logo-txt"><em>AEGIS</em> APS</div>
+  </div>
+  <div class="hdr-ctr">
+    <div class="spill ok"><span class="sdot"></span>SYSTEMS NOMINAL</div>
+    <div class="spill err"><span class="sdot"></span>3 ACTIVE ALERTS</div>
+  </div>
+  <div class="hdr-r">
+    <div class="nw"><button class="nb" onclick="showNotifs()">🔔</button><span class="ndot"></span></div>
+    <button class="hb ghost">Settings</button>
+    <button class="hb solid" onclick="openReportModal()">+ New Report</button>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <button class="nt active" onclick="switchTab('detection',this)"><span class="ti">📡</span>Detection Center</button>
+  <button class="nt" onclick="switchTab('alerts',this)"><span class="ti">🚨</span>Alert &amp; Response<span class="tbadge">3</span></button>
+  <button class="nt" onclick="switchTab('reports',this)"><span class="ti">📋</span>Incident Reports</button>
+  <button class="nt" onclick="switchTab('analytics',this)"><span class="ti">📊</span>Analytics</button>
+</nav>
+
+<main class="mc">
+
+<!-- DETECTION -->
+<section id="sec-detection" class="sec active">
+  <div class="seh">
+    <div>
+      <div class="set">Detection <em>Center</em></div>
+      <div class="ses">// LIVE MONITORING — 12 CAMERAS ACTIVE — LAST SYNC: <span id="sync-time">--:--:--</span></div>
+    </div>
+    <div class="sea">
+      <button class="btn bsm bg" onclick="simulateIncident()">⚡ Simulate Incident</button>
+      <button class="btn bsm ba">📥 Export Feeds</button>
+    </div>
+  </div>
+  <div class="sr">
+    <div class="sc"><div class="sl">Active Cameras</div><div class="sv a" id="cam-count">12</div><div class="sd dn">▲ All operational</div></div>
+    <div class="sc dng"><div class="sl">Accidents Today</div><div class="sv d" id="acc-count">3</div><div class="sd up">▲ +1 since 08:00</div></div>
+    <div class="sc wrn"><div class="sl">Speed Violations</div><div class="sv w">17</div><div class="sd up">▲ +4 last hour</div></div>
+    <div class="sc inf"><div class="sl">Avg Response (min)</div><div class="sv i">4.2</div><div class="sd dn">▼ −0.8 vs yesterday</div></div>
+    <div class="sc"><div class="sl">Vehicles Monitored</div><div class="sv a">2,847</div><div class="sd dn">▲ Live count</div></div>
+  </div>
+  <div class="gm mb20">
+    <div class="card">
+      <div class="ch">
+        <div class="ct"><span class="dot dr"></span>Live CCTV Feeds</div>
+        <div class="frow g8"><button class="btn bsm bg">Grid</button><button class="btn bsm bg">Full</button></div>
+      </div>
+      <div class="fg">
+        <div class="fi af" onclick="openFeed(0)">
+          <canvas class="fc" id="fc-0"></canvas><div class="fh"></div>
+          <span class="fcr tl"></span><span class="fcr tr"></span><span class="fcr bl"></span><span class="fcr br"></span>
+          <div class="fbw"><span class="flv">REC</span><span class="fci">CAM-01</span></div>
+          <span class="fab">⚠ INCIDENT</span>
+          <div class="ff">NH-44 JUNCTION A · HD 1080p · 13.08°N 80.27°E</div>
+          <div class="feh">🔍 Expand Feed</div>
+        </div>
+        <div class="fi" onclick="openFeed(1)">
+          <canvas class="fc" id="fc-1"></canvas><div class="fh"></div>
+          <span class="fcr tl"></span><span class="fcr tr"></span><span class="fcr bl"></span><span class="fcr br"></span>
+          <div class="fbw"><span class="flv">REC</span><span class="fci">CAM-02</span></div>
+          <div class="ff">RING ROAD WEST KM 12 · HD 1080p · 13.05°N 80.24°E</div>
+          <div class="feh">🔍 Expand Feed</div>
+        </div>
+        <div class="fi" onclick="openFeed(2)">
+          <canvas class="fc" id="fc-2"></canvas><div class="fh"></div>
+          <span class="fcr tl"></span><span class="fcr tr"></span><span class="fcr bl"></span><span class="fcr br"></span>
+          <div class="fbw"><span class="flv">REC</span><span class="fci">CAM-03</span></div>
+          <div class="ff">HIGHWAY OVERPASS TAMBARAM · 4K · 12.92°N 80.10°E</div>
+          <div class="feh">🔍 Expand Feed</div>
+        </div>
+        <div class="fi" onclick="openFeed(3)">
+          <canvas class="fc" id="fc-3"></canvas><div class="fh"></div>
+          <span class="fcr tl"></span><span class="fcr tr"></span><span class="fcr bl"></span><span class="fcr br"></span>
+          <div class="fbw"><span class="flv">REC</span><span class="fci">CAM-04</span></div>
+          <div class="ff">CITY BYPASS EXIT-4 SHOLINGANALLUR · HD · 12.90°N 80.22°E</div>
+          <div class="feh">🔍 Expand Feed</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card">
+        <div class="ch"><div class="ct"><span class="dot dy"></span>Speed Radar</div><span class="bdg active">Live</span></div>
+        <div class="spl" id="speed-list"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct"><span class="dot dg"></span>Incident Feed</div><button class="btn bsm bg">View All</button></div>
+        <div class="nf" id="news-feed"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb20">
+    <div class="ch">
+      <div class="ct">📍 Incident Heat Map — Live</div>
+      <div class="frow g12 sm mono mut">
+        <span style="color:var(--danger)">● Critical</span>
+        <span style="color:var(--warn)">● Warning</span>
+        <span style="color:var(--accent)">● Clear</span>
+      </div>
+    </div>
+    <div class="mw"><canvas class="mcan" id="map-canvas"></canvas><div class="mov" id="map-overlay"></div></div>
+  </div>
+</section>
+
+<!-- ALERTS -->
+<section id="sec-alerts" class="sec">
+  <div class="seh">
+    <div>
+      <div class="set">Alert &amp; <em>Response</em></div>
+      <div class="ses">// AUTHORITY DISPATCH — INCIDENT MANAGEMENT — REAL-TIME COORDINATION</div>
+    </div>
+    <div class="sea">
+      <button class="btn bsm bd" onclick="triggerEmergency()">🚨 Mass Alert</button>
+      <button class="btn bsm ba" onclick="generateReport()">📄 Auto Report</button>
+    </div>
+  </div>
+  <div class="sr">
+    <div class="sc dng"><div class="sl">Active Emergencies</div><div class="sv d">3</div><div class="sd up">▲ Immediate action required</div></div>
+    <div class="sc wrn"><div class="sl">Units Dispatched</div><div class="sv w">5</div></div>
+    <div class="sc inf"><div class="sl">Avg ETA (min)</div><div class="sv i">6.5</div></div>
+    <div class="sc"><div class="sl">Resolved Today</div><div class="sv a">11</div><div class="sd dn">▼ All clear</div></div>
+  </div>
+  <div class="gm2 mb20">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card">
+        <div class="ch"><div class="ct">🚑 Dispatch Panel</div></div>
+        <div class="dg2" id="dispatch-grid"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">⏱ Response Timeline</div></div>
+        <div class="cb"><div class="tl" id="timeline"></div></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:var(--fd);font-size:16px;font-weight:700;color:var(--white);margin-bottom:12px;letter-spacing:.04em;text-transform:uppercase">Active Incident Alerts</div>
+      <div class="al" id="alert-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- REPORTS -->
+<section id="sec-reports" class="sec">
+  <div class="seh">
+    <div>
+      <div class="set">Incident <em>Reports</em></div>
+      <div class="ses">// DETAILED SUMMARIES — FOOTAGE — PREVENTIVE &amp; REMEDIAL MEASURES</div>
+    </div>
+    <div class="sea">
+      <button class="btn bsm ba" onclick="openReportModal()">+ Generate Report</button>
+      <button class="btn bsm bg">📥 Export PDF</button>
+    </div>
+  </div>
+  <div id="report-list"></div>
+</section>
+
+<!-- ANALYTICS -->
+<section id="sec-analytics" class="sec">
+  <div class="seh">
+    <div>
+      <div class="set">Analytics &amp; <em>Insights</em></div>
+      <div class="ses">// ACCIDENT STATISTICS — SURVIVAL RATES — TREND ANALYSIS</div>
+    </div>
+    <div class="sea">
+      <button class="btn bsm bg">Last 30 Days ▾</button>
+      <button class="btn bsm ba">📊 Export</button>
+    </div>
+  </div>
+  <div class="sr mb20">
+    <div class="sc dng"><div class="sl">Total Accidents (YTD)</div><div class="sv d">148</div><div class="sd up">▲ +12% vs last year</div></div>
+    <div class="sc"><div class="sl">Avg Survival Rate</div><div class="sv a">76.4%</div><div class="sd dn">▼ +3.2% improvement</div></div>
+    <div class="sc wrn"><div class="sl">Fatalities (YTD)</div><div class="sv w">22</div><div class="sd up">▲ Critical review needed</div></div>
+    <div class="sc inf"><div class="sl">Preventable (%)</div><div class="sv i">68%</div></div>
+  </div>
+  <div class="cr mb20">
+    <div class="cc"><div class="ch"><div class="ct">📈 Monthly Trend</div></div><div class="ccb"><canvas id="chart-trend"></canvas></div></div>
+    <div class="cc"><div class="ch"><div class="ct">🥧 Accident Types</div></div><div class="ccb"><canvas id="chart-types"></canvas></div></div>
+  </div>
+  <div class="cr mb20">
+    <div class="cc"><div class="ch"><div class="ct">📊 Hourly Distribution</div></div><div class="ccb"><canvas id="chart-hourly"></canvas></div></div>
+    <div class="cc"><div class="ch"><div class="ct">📉 Survival Rate by Severity</div></div><div class="ccb"><canvas id="chart-survival"></canvas></div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">📋 All Incidents — Observations</div><span class="mut sm mono">148 records</span></div>
+    <div class="cb" style="padding:0">
+      <div class="tw">
+        <table>
+          <thead><tr><th>Incident ID</th><th>Date &amp; Time</th><th>Location</th><th>Type</th><th>Severity</th><th>Vehicles</th><th>Casualties</th><th>Survival Rate</th><th>Status</th><th>Observation</th></tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+</div>
+
+<!-- MODAL REPORT -->
+<div class="mo" id="report-modal">
+  <div class="md">
+    <div class="mh"><div class="mtt">📄 Generate Incident Report</div><button class="mx" onclick="closeModal('report-modal')">×</button></div>
+    <div class="mb2">
+      <div class="fgrid mb20">
+        <div class="fg"><label class="fl">Incident ID</label><input class="fi2" value="INC-2026-0149" readonly></div>
+        <div class="fg"><label class="fl">Severity</label><select class="fsel" id="rep-severity"><option value="critical">Critical</option><option value="moderate" selected>Moderate</option><option value="minor">Minor</option></select></div>
+        <div class="fg"><label class="fl">Date &amp; Time</label><input class="fi2" type="datetime-local" id="rep-datetime"></div>
+        <div class="fg"><label class="fl">Location</label><input class="fi2" id="rep-location" placeholder="e.g. NH-44, Km 32.5"></div>
+        <div class="fg"><label class="fl">Vehicles Involved</label><input class="fi2" type="number" id="rep-vehicles" value="2" min="1"></div>
+        <div class="fg"><label class="fl">Casualties</label><input class="fi2" type="number" id="rep-casualties" value="1" min="0"></div>
+        <div class="fg full"><label class="fl">Incident Description</label><textarea class="fta" id="rep-description" placeholder="Describe what happened, conditions, cause..."></textarea></div>
+        <div class="fg full"><label class="fl">Preventive Measures</label><textarea class="fta" id="rep-preventive" placeholder="Speed barriers, VMS activated..."></textarea></div>
+        <div class="fg full"><label class="fl">Remedial Measures</label><textarea class="fta" id="rep-remedial" placeholder="Road repairs, medical response..."></textarea></div>
+        <div class="fg full"><label class="fl">Attach CCTV Footage</label>
+          <div class="uz" onclick="fakeUpload()"><div class="ui">📹</div><div class="ut">Drop footage files or click to select</div><div class="us">MP4 · AVI · MKV — Max 500 MB</div></div>
+        </div>
+      </div>
+      <div class="frow g8" style="justify-content:flex-end">
+        <button class="btn bg" onclick="closeModal('report-modal')">Cancel</button>
+        <button class="btn ba" onclick="submitReport()">🛡 Generate &amp; Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FEED -->
+<div class="mo" id="feed-modal">
+  <div class="md" style="max-width:900px">
+    <div class="mh"><div class="mtt" id="feed-modal-title">CAM-01 — Live Feed</div><button class="mx" onclick="closeModal('feed-modal')">×</button></div>
+    <div class="mb2" style="padding:14px">
+      <div style="position:relative;border-radius:var(--r2);overflow:hidden;margin-bottom:14px">
+        <canvas id="feed-modal-canvas" style="width:100%;border-radius:var(--r2);border:1px solid var(--border);display:block"></canvas>
+        <div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px)"></div>
+        <span class="fcr tl"></span><span class="fcr tr"></span><span class="fcr bl"></span><span class="fcr br"></span>
+      </div>
+      <div class="g2">
+        <div>
+          <div class="sm mono mut mb12">FEED EVENTS</div>
+          <div class="tl">
+            <div class="tli"><div class="tld" style="background:var(--danger)"></div><div class="tlt">14:22:07</div><div class="tlb">⚠ Possible collision detected — Confidence: 92%</div></div>
+            <div class="tli"><div class="tld" style="background:var(--warn)"></div><div class="tlt">14:20:43</div><div class="tlb">Speed violation — TN09AB1234 — 112 km/h in 80 zone</div></div>
+            <div class="tli"><div class="tld" style="background:var(--accent)"></div><div class="tlt">14:18:00</div><div class="tlb">Normal traffic flow restored</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="sm mono mut mb12">AI ANALYSIS</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:13px;font-size:12px;color:var(--text2);line-height:2;font-family:var(--fm)">
+            🤖 <strong style="color:var(--white)">Status:</strong><span style="color:var(--accent)"> Active</span><br>
+            🚗 <strong style="color:var(--white)">Vehicles in frame:</strong> 7<br>
+            ⚡ <strong style="color:var(--white)">Avg speed:</strong> 68 km/h<br>
+            ⚠ <strong style="color:var(--white)">Anomaly score:</strong><span style="color:var(--danger)"> 0.87 / HIGH</span><br>
+            📍 <strong style="color:var(--white)">GPS:</strong> 13.0827°N, 80.2707°E
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tw2" id="toast-wrap"></div>
+
+<script>
+'use strict';
+const SD=[
+  {plate:'TN09-AB1234',speed:112,limit:80,status:'dng'},
+  {plate:'KA05-CD5678',speed:95,limit:80,status:'warn'},
+  {plate:'MH12-EF2345',speed:78,limit:80,status:'safe'},
+  {plate:'TN04-GH9012',speed:134,limit:100,status:'dng'},
+  {plate:'AP39-IJ3456',speed:88,limit:100,status:'safe'},
+  {plate:'DL01-KL7890',speed:103,limit:80,status:'dng'},
+];
+const NI=[
+  {title:'Multi-vehicle pile-up on NH-44 Junction A, 3 injured',time:'14:22',tag:'critical',dot:'dng'},
+  {title:'Speed trap: 134 km/h detected near City Bypass',time:'14:18',tag:'moderate',dot:'wrn'},
+  {title:'Minor fender-bender at Ring Road West signal',time:'13:55',tag:'minor',dot:'inf'},
+  {title:'Road cleared after debris obstruction — Highway 32',time:'13:40',tag:'clear',dot:'ok'},
+  {title:'Drunk driving suspect apprehended — MH12 motorway',time:'12:15',tag:'moderate',dot:'wrn'},
+];
+const AUTH=[
+  {icon:'🚑',name:'Ambulance Unit A',status:'online',dispatched:true},
+  {icon:'🚔',name:'Traffic Police',status:'dispatched',dispatched:true},
+  {icon:'🚒',name:'Fire & Rescue',status:'online',dispatched:false},
+  {icon:'🏥',name:'Emergency Med',status:'online',dispatched:true},
+  {icon:'🚁',name:'Air Ambulance',status:'offline',dispatched:false},
+  {icon:'🔧',name:'Highway Maint.',status:'dispatched',dispatched:true},
+];
+const TLI=[
+  {time:'14:22:07',text:'🚨 Incident detected — CAM-01 AI alert triggered',c:'var(--danger)'},
+  {time:'14:22:15',text:'📡 Authorities notified — auto-dispatch initiated',c:'var(--warn)'},
+  {time:'14:22:40',text:'🚔 Traffic Police Unit #12 dispatched',c:'var(--info)'},
+  {time:'14:23:10',text:'🚑 Ambulance Unit A en route — ETA 5 min',c:'var(--info)'},
+  {time:'14:26:00',text:'🏥 Emergency Medical on standby',c:'var(--accent)'},
+  {time:'14:28:30',text:'🚔 Police arrived on scene',c:'var(--accent)'},
+];
+const AA=[
+  {id:'INC-2026-0147',severity:'critical',location:'NH-44 Junction A',details:'3 vehicles involved. 2 casualties. Road partially blocked. Medical assistance dispatched.',time:'14:22:07',eta:'2 min away'},
+  {id:'INC-2026-0146',severity:'moderate',location:'Ring Road West, Km 12',details:'2 vehicle collision. Minor injuries. Signal damaged. One lane blocked.',time:'13:55:30',eta:'8 min away'},
+  {id:'INC-2026-0145',severity:'minor',location:'City Bypass, Exit 4',details:'Single vehicle incident. No injuries. Vehicle disabled, tow required.',time:'13:40:15',eta:'Resolved'},
+];
+const TD=[
+  {id:'INC-2026-0147',dt:'2026-02-18 14:22',loc:'NH-44 Junction A',type:'Multi-vehicle',sev:'critical',veh:3,cas:2,surv:65,stat:'Active',obs:'Speeding + wet road'},
+  {id:'INC-2026-0146',dt:'2026-02-18 13:55',loc:'Ring Road West',type:'Rear-end',sev:'moderate',veh:2,cas:1,surv:88,stat:'Active',obs:'Distracted driving'},
+  {id:'INC-2026-0145',dt:'2026-02-18 13:40',loc:'City Bypass Ex-4',type:'Single',sev:'minor',veh:1,cas:0,surv:100,stat:'Resolved',obs:'Tyre blowout'},
+  {id:'INC-2026-0144',dt:'2026-02-18 09:12',loc:'Highway Overpass',type:'Side-swipe',sev:'moderate',veh:2,cas:0,surv:100,stat:'Resolved',obs:'Lane change violation'},
+  {id:'INC-2026-0143',dt:'2026-02-17 22:05',loc:'NH-44 Km 28',type:'Head-on',sev:'critical',veh:2,cas:3,surv:40,stat:'Closed',obs:'Wrong-way driving'},
+  {id:'INC-2026-0142',dt:'2026-02-17 16:44',loc:'MG Road Signal',type:'T-bone',sev:'moderate',veh:2,cas:1,surv:82,stat:'Closed',obs:'Signal jumping'},
+  {id:'INC-2026-0141',dt:'2026-02-17 07:30',loc:'Industrial Zone Rd',type:'Rear-end',sev:'minor',veh:2,cas:0,surv:100,stat:'Closed',obs:'Fog visibility'},
+  {id:'INC-2026-0140',dt:'2026-02-16 23:18',loc:'Highway 32 Bypass',type:'Rollover',sev:'critical',veh:1,cas:2,surv:55,stat:'Closed',obs:'High speed + curve'},
+];
+const REPS=[
+  {id:'INC-2026-0147',title:'MULTI-VEHICLE COLLISION — NH-44 JUNCTION A',sev:'critical',
+   dt:'2026-02-18 14:22:07',loc:'NH-44 Junction A, near Toll Booth 7, Chennai, Tamil Nadu',
+   cameras:['CAM-01','CAM-05'],
+   desc:'A multi-vehicle collision occurred at NH-44 Junction A at 14:22 hours. A speeding truck (134 km/h in an 80 km/h zone) rear-ended a sedan, triggering a chain collision involving 3 vehicles. Road surface was wet from earlier rainfall. Two persons sustained serious injuries; emergency medical assistance was dispatched within 90 seconds of AI detection. Traffic backed up 1.4 km along the northbound carriageway.',
+   prev:['Speed cameras recalibrated for real-time alerts at ±2 km/h tolerance','Wet road warning digital signage activated on VMS boards 300 m ahead','Traffic diversion at Junction B initiated via remote VMS system'],
+   remed:['Ambulance Units A and B dispatched within 90 seconds','Traffic Police Unit #12 redirected via Ring Road alternate route','Road debris cleared by Highway Maintenance Unit #3 within 40 minutes','Incident report filed with RTO and insurance authority'],
+   surv:65,cas:2,veh:3},
+  {id:'INC-2026-0146',title:'REAR-END COLLISION — RING ROAD WEST',sev:'moderate',
+   dt:'2026-02-18 13:55:30',loc:'Ring Road West, Km 12.4, near Velachery Overpass, Chennai',
+   cameras:['CAM-02'],
+   desc:'A rear-end collision between two passenger vehicles was detected at a Ring Road West traffic signal. AI analysis of CAM-02 footage confirmed the rear driver was using a mobile phone at time of impact. Minor injuries on scene. Signal hardware damage required urgent repair. Single lane closed for 45 minutes.',
+   prev:['Mobile phone detection AI module activated on CAM-02 feed','Patrol frequency at Ring Road signals increased to 45-minute intervals'],
+   remed:['Traffic Police Unit #7 arrived at 14:03 — 8 minutes post-incident','Signal repair crew deployed','Both drivers issued mobile phone violation challans'],
+   surv:88,cas:1,veh:2},
+];
+
+/* ═══ CCTV ENGINE ════════════════════════════════════════
+  Four distinct scenes:
+  CAM-01 Rainy night highway w/ collision active
+  CAM-02 Daytime suburban road, clear
+  CAM-03 Dusk overpass elevated view
+  CAM-04 Night bypass low traffic
+══════════════════════════════════════════════════════ */
+const CFGS=[
+  {night:true, rain:true, incident:true, sky1:'#030608',sky2:'#07101a',r1:'#0e1825',r2:'#070e18'},
+  {night:false,rain:false,incident:false,sky1:'#7ab0d4',sky2:'#b5d4e8',r1:'#484f5a',r2:'#363c45'},
+  {night:false,rain:false,incident:false,sky1:'#2a1a10',sky2:'#4a2a18',r1:'#3a3540',r2:'#282030'},
+  {night:true, rain:false,incident:false,sky1:'#040608',sky2:'#080e18',r1:'#0c1520',r2:'#060c16'},
+];
+function mkV(idx){
+  const sets=[
+    [{x:.10,y:.72,vx:.0014,type:'truck',col:'#1a3050',w:.18,h:.10},
+     {x:.38,y:.72,vx:.0020,type:'sedan',col:'#6b0000',w:.10,h:.065},
+     {x:.62,y:.72,vx:.0028,type:'sedan',col:'#1a4a1a',w:.10,h:.065},
+     {x:.22,y:.58,vx:.0026,type:'sedan',col:'#2a2a5a',w:.09,h:.058},
+     {x:.52,y:.58,vx:.0018,type:'moto', col:'#282828',w:.05,h:.04},
+     {x:.78,y:.58,vx:.0024,type:'sedan',col:'#4a2a00',w:.09,h:.058}],
+    [{x:.06,y:.68,vx:.0018,type:'sedan',col:'#c0c0c0',w:.10,h:.065},
+     {x:.30,y:.68,vx:.0016,type:'suv',  col:'#3a5a7a',w:.12,h:.075},
+     {x:.58,y:.68,vx:.0022,type:'sedan',col:'#d08020',w:.10,h:.065},
+     {x:.18,y:.55,vx:.0020,type:'truck',col:'#445566',w:.16,h:.095},
+     {x:.46,y:.55,vx:.0026,type:'moto', col:'#1a1a1a',w:.05,h:.04}],
+    [{x:.12,y:.52,vx:.0028,type:'sedan',col:'#a8a8a8',w:.08,h:.05},
+     {x:.34,y:.52,vx:.0020,type:'truck',col:'#556677',w:.14,h:.08},
+     {x:.56,y:.52,vx:.0026,type:'sedan',col:'#c05040',w:.08,h:.05},
+     {x:.20,y:.65,vx:.0022,type:'suv',  col:'#2a4a6a',w:.10,h:.065},
+     {x:.46,y:.65,vx:.0018,type:'sedan',col:'#4a3a60',w:.08,h:.05},
+     {x:.70,y:.65,vx:.0030,type:'moto', col:'#141414',w:.04,h:.035}],
+    [{x:.18,y:.65,vx:.0032,type:'sedan',col:'#181e2a',w:.10,h:.065},
+     {x:.52,y:.65,vx:.0025,type:'suv',  col:'#1e2c3e',w:.12,h:.075},
+     {x:.36,y:.52,vx:.0020,type:'truck',col:'#121820',w:.16,h:.095},
+     {x:.68,y:.52,vx:.0028,type:'sedan',col:'#1c2028',w:.09,h:.058}],
+  ];
+  return sets[idx].map(v=>({...v,x:v.x+(Math.random()-.5)*.08,speed:v.vx*(0.8+Math.random()*.4)}));
+}
+const FS=Array.from({length:4},(_,i)=>({v:mkV(i),t:0,cfg:CFGS[i],fc:0}));
+
+function lc(h,p){
+  try{let n=parseInt(h.replace('#',''),16);return`rgb(${Math.min(255,(n>>16)+p)},${Math.min(255,((n>>8)&255)+p)},${Math.min(255,(n&255)+p)})`}
+  catch{return h}
+}
+
+function drawScene(canvas,st,thumb){
+  if(!canvas)return;
+  const W=canvas.width=canvas.offsetWidth||320;
+  const H=canvas.height=canvas.offsetHeight||180;
+  if(W<10||H<10)return;
+  const ctx=canvas.getContext('2d',{alpha:false});
+  const c=st.cfg; st.t+=.016; st.fc++;
+  const t=st.t;
+
+  // sky
+  const sky=ctx.createLinearGradient(0,0,0,H*.44);
+  sky.addColorStop(0,c.sky1);sky.addColorStop(1,c.sky2);
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*.44);
+
+  // buildings
+  const hz=H*.44;
+  [{x:.02,w:.06,h:.32},{x:.08,w:.04,h:.24},{x:.12,w:.07,h:.28},{x:.20,w:.05,h:.20},
+   {x:.25,w:.08,h:.35},{x:.60,w:.05,h:.30},{x:.65,w:.08,h:.38},{x:.73,w:.04,h:.22},
+   {x:.78,w:.06,h:.28},{x:.84,w:.05,h:.20},{x:.90,w:.07,h:.32}].forEach(b=>{
+    const bx=b.x*W,bw=b.w*W,bh=b.h*hz,by=hz-bh;
+    ctx.fillStyle=c.night?'#070d18':'#5a6070';ctx.fillRect(bx,by,bw,bh);
+    if(c.night){
+      const rows=Math.floor(bh/12),cols=Math.floor(bw/8);
+      for(let r=0;r<rows;r++)for(let cl=0;cl<cols;cl++){
+        if((r*7+cl*3+Math.floor(st.fc*.015))%5===0){
+          ctx.fillStyle=`rgba(255,220,120,${.25+Math.sin(t*.4+r+cl)*.1})`;
+          ctx.fillRect(bx+cl*8+2,by+r*12+3,4,6);
+        }
+      }
+    }
+  });
+
+  // ground
+  const gnd=ctx.createLinearGradient(0,H*.44,0,H);
+  gnd.addColorStop(0,c.night?'#0e1520':'#3a4050');gnd.addColorStop(1,c.night?'#060d18':'#2a3040');
+  ctx.fillStyle=gnd;ctx.fillRect(0,H*.44,W,H*.56);
+
+  // road trapezoid
+  const vx=W/2,vy=H*.44,rt=W*.22,rb=W*.95;
+  ctx.beginPath();ctx.moveTo(vx-rt/2,vy);ctx.lineTo(vx+rt/2,vy);ctx.lineTo(vx+rb/2,H);ctx.lineTo(vx-rb/2,H);ctx.closePath();
+  const rg=ctx.createLinearGradient(0,vy,0,H);rg.addColorStop(0,c.r1);rg.addColorStop(1,c.r2);
+  ctx.fillStyle=rg;ctx.fill();
+
+  // kerbs
+  ctx.strokeStyle=c.night?'rgba(255,220,160,.18)':'rgba(220,200,150,.25)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(vx-rt/2,vy);ctx.lineTo(vx-rb/2,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(vx+rt/2,vy);ctx.lineTo(vx+rb/2,H);ctx.stroke();
+
+  // dashed centre line (animated)
+  for(let i=0;i<8;i++){
+    const ao=(t*.15)%(1/8);
+    const t0=(i/8+ao)%1,t1=((i+.45)/8+ao)%1;
+    if(t0<.02)continue;
+    ctx.strokeStyle=`rgba(255,220,60,${.28+t0*.35})`;ctx.lineWidth=1+t0*2;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(vx,vy+t0*(H-vy));ctx.lineTo(vx,vy+t1*(H-vy));ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // vehicles
+  st.v.forEach((v,vi)=>{
+    v.x+=v.speed;if(v.x>1.12)v.x=-0.12;
+    const dep=(v.y-.44)/.56,sc=.25+dep*.75;
+    const px=vx+(v.x-.5)*rb*sc,py=vy+dep*(H-vy);
+    const pw=v.w*W*sc,ph=v.h*H*sc;
+    // body
+    ctx.fillStyle=v.col;ctx.beginPath();ctx.roundRect(px-pw/2,py-ph,pw,ph,[2,2,0,0]);ctx.fill();
+    if(v.type!=='moto'){
+      const rw=v.type==='truck'?pw*.9:pw*.7,rh=ph*.44;
+      ctx.fillStyle=lc(v.col,10);ctx.beginPath();ctx.roundRect(px-rw/2,py-ph-rh,rw,rh,3);ctx.fill();
+    }
+    if(c.night){
+      const fa=.88+Math.sin(t*60+vi)*.06;
+      ctx.fillStyle=`rgba(255,245,200,${fa})`;
+      ctx.beginPath();ctx.ellipse(px+pw*.34,py-ph*.14,pw*.06,ph*.09,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(px-pw*.34,py-ph*.14,pw*.06,ph*.09,0,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle='rgba(220,40,40,.8)';
+    ctx.beginPath();ctx.ellipse(px+pw*.37,py-ph*.14,pw*.05,ph*.08,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(px-pw*.37,py-ph*.14,pw*.05,ph*.08,0,0,Math.PI*2);ctx.fill();
+    // AI bbox
+    if(c.incident&&vi<3&&!thumb){
+      const ba=.65+Math.sin(t*4+vi)*.2;
+      ctx.strokeStyle=vi===0?`rgba(240,58,95,${ba})`:`rgba(0,201,167,${ba*.6})`;
+      ctx.lineWidth=vi===0?2:1;ctx.strokeRect(px-pw/2-3,py-ph-3,pw+6,ph+6);
+      ctx.font=`bold ${Math.max(7,Math.round(8*sc))}px IBM Plex Mono,monospace`;
+      const lbl=vi===0?'COLLISION':`VEH-${vi+1}`;
+      const lw=ctx.measureText(lbl).width+8;
+      ctx.fillStyle=vi===0?'rgba(240,58,95,.88)':'rgba(0,201,167,.7)';
+      ctx.fillRect(px-pw/2-3,py-ph-16,lw,14);
+      ctx.fillStyle='#fff';ctx.fillText(lbl,px-pw/2,py-ph-5);
+    }
+  });
+
+  // rain
+  if(c.rain&&!thumb){
+    ctx.save();ctx.globalAlpha=.16;
+    for(let i=0;i<60;i++){
+      const rx=(i*73+t*310)%W,ry=(i*47+t*185)%H;
+      ctx.strokeStyle='rgba(180,210,240,.65)';ctx.lineWidth=.7;
+      ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx+2,ry+13);ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // incident glow
+  if(c.incident){
+    ctx.fillStyle=`rgba(240,58,95,${thumb?.03:.055+Math.sin(t*2)*.04})`;ctx.fillRect(0,0,W,H);
+    if(!thumb){ctx.strokeStyle=`rgba(240,58,95,${.28+Math.sin(t*3)*.14})`;ctx.lineWidth=2.5;ctx.strokeRect(1,1,W-2,H-2);}
+  }
+
+  // timestamp
+  if(!thumb){
+    const now=new Date(),ts=now.toLocaleTimeString('en-GB',{hour12:false}),ds=now.toLocaleDateString('en-GB').replace(/\//g,'-');
+    ctx.font='10px IBM Plex Mono,monospace';
+    const txt=ds+'  '+ts,tw=ctx.measureText(txt).width;
+    ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(W-tw-14,H-20,tw+10,16);
+    ctx.fillStyle='rgba(0,220,160,.85)';ctx.fillText(txt,W-tw-9,H-8);
+  }
+
+  // scanlines
+  ctx.save();ctx.globalAlpha=.045;
+  for(let y=0;y<H;y+=3){ctx.fillStyle='rgba(0,0,0,1)';ctx.fillRect(0,y,W,1);}
+  ctx.restore();
+
+  // vignette
+  const vig=ctx.createRadialGradient(W/2,H/2,H*.22,W/2,H/2,H*.9);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.5)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
+}
+
+let rafId=null,lastFT=0;
+const FI=1000/24;
+function loop(ts){
+  rafId=requestAnimationFrame(loop);
+  if(ts-lastFT<FI)return;lastFT=ts;
+  for(let i=0;i<4;i++){const c=document.getElementById('fc-'+i);if(c&&c.offsetParent!==null)drawScene(c,FS[i],false);}
+}
+function startLoop(){if(rafId)cancelAnimationFrame(rafId);rafId=requestAnimationFrame(loop);}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){if(rafId){cancelAnimationFrame(rafId);rafId=null;}}else startLoop();
+});
+
+/* MAP */
+function initMap(){
+  const canvas=document.getElementById('map-canvas');if(!canvas)return;
+  canvas.width=canvas.offsetWidth||800;canvas.height=290;
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#07090f');bg.addColorStop(1,'#090d16');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  [{p:[[0,H*.38],[W*.55,H*.42],[W,H*.40]],lw:7,col:'rgba(28,42,60,.85)'},
+   {p:[[0,H*.66],[W*.45,H*.70],[W,H*.68]],lw:7,col:'rgba(28,42,60,.85)'},
+   {p:[[W*.28,0],[W*.30,H*.5],[W*.32,H]],lw:6,col:'rgba(28,42,60,.75)'},
+   {p:[[W*.62,0],[W*.65,H*.5],[W*.64,H]],lw:6,col:'rgba(28,42,60,.75)'},
+   {p:[[0,H*.52],[W,H*.54]],lw:4,col:'rgba(22,34,50,.7)'}].forEach(r=>{
+    ctx.strokeStyle=r.col;ctx.lineWidth=r.lw;ctx.beginPath();ctx.moveTo(r.p[0][0],r.p[0][1]);
+    r.p.slice(1).forEach(pt=>ctx.lineTo(pt[0],pt[1]));ctx.stroke();
+  });
+  for(let x=0;x<W;x+=55){ctx.strokeStyle='rgba(0,201,167,.025)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=55){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.fillStyle='rgba(0,201,167,.14)';ctx.font='bold 11px IBM Plex Mono,monospace';
+  ctx.fillText('CHENNAI METROPOLITAN AREA — TRAFFIC SURVEILLANCE GRID',14,H-12);
+  const ov=document.getElementById('map-overlay');
+  if(ov)ov.innerHTML=[{x:29,y:40,t:'dng',l:'INC-0147 · CRITICAL'},{x:52,y:64,t:'wrn',l:'INC-0146 · MODERATE'},
+    {x:68,y:44,t:'wrn',l:'SPD-ZONE'},{x:16,y:55,t:'ok',l:'CAM-01'},{x:81,y:70,t:'ok',l:'CAM-04'},{x:44,y:30,t:'ok',l:'CAM-03'}]
+    .map(p=>`<div class="mp ${p.t}" style="left:${p.x}%;top:${p.y}%"><div class="mpd"></div><div class="mpl">${p.l}</div></div>`).join('');
+}
+
+/* RENDERS */
+function renderSpeedList(){
+  const el=document.getElementById('speed-list');if(!el)return;
+  el.innerHTML=SD.map(v=>{const pct=Math.min(100,(v.speed/(v.limit*1.6))*100);
+    return`<div class="spi"><div class="spp">${v.plate}</div><div class="spt"><div class="spf ${v.status}" style="width:${pct}%"></div></div><div class="spn ${v.status}">${v.speed}<span style="font-size:9px"> km/h</span></div></div>`;}).join('');
+}
+function renderNews(){
+  const el=document.getElementById('news-feed');if(!el)return;
+  el.innerHTML=NI.map(n=>`<div class="ni"><div class="nd ${n.dot}"></div><div><div class="ntitle">${n.title}</div><div class="nmeta"><span>${n.time}</span><span class="ntag ${n.tag}">${n.tag.toUpperCase()}</span></div></div></div>`).join('');
+}
+function renderDispatch(){
+  const el=document.getElementById('dispatch-grid');if(!el)return;
+  el.innerHTML=AUTH.map((a,i)=>`<div class="du ${a.dispatched?'sent':a.status==='online'?'on':''}"><div class="dic">${a.icon}</div><div class="dn">${a.name}</div><div class="ds ${a.status}">${a.status.toUpperCase()}</div><button class="db ${a.dispatched?'sent':''}" onclick="toggleDispatch(${i},this)">${a.dispatched?'📡 Dispatched':'🚀 Dispatch'}</button></div>`).join('');
+}
+function renderTimeline(){
+  const el=document.getElementById('timeline');if(!el)return;
+  el.innerHTML=TLI.map(t=>`<div class="tli"><div class="tld" style="background:${t.c}"></div><div class="tlt">${t.time}</div><div class="tlb">${t.text}</div></div>`).join('');
+}
+function renderAlerts(){
+  const el=document.getElementById('alert-list');if(!el)return;
+  el.innerHTML=AA.map(a=>`<div class="ac ${a.severity}"><div class="ach"><span class="aid">${a.id}</span><span class="abg ${a.severity}">${a.severity.toUpperCase()}</span></div><div class="acb"><div><div class="aloc">📍 ${a.location}</div><div class="atxt">${a.details}</div><div class="atm">⏱ ${a.time} · ETA: ${a.eta}</div></div><div class="aacts"><button class="btn bsm ba" onclick="generateDetailReport('${a.id}')">📄 Report</button><button class="btn bsm bw" onclick="showToast('warn','Deploying','Backup unit dispatched','🚁')">🚁 Deploy</button><button class="btn bsm bg" onclick="resolveAlert('${a.id}',this)">✅ Resolve</button></div></div></div>`).join('');
+}
+function renderReports(){
+  const el=document.getElementById('report-list');if(!el)return;
+  el.innerHTML=REPS.map(r=>`<div class="rc"><div class="rch"><div class="rid">📋 ${r.id} · INCIDENT REPORT · ${r.sev.toUpperCase()}</div><div class="rtl">${r.title}</div><div class="rmr"><div class="rm">📅<strong>${r.dt}</strong></div><div class="rm">📍<strong>${r.loc}</strong></div><div class="rm">🎥<strong>${r.cameras.join(', ')}</strong></div><div class="rm">💀<strong>${r.cas}</strong></div><div class="rm">💚<strong style="color:${r.surv>70?'var(--accent)':r.surv>50?'var(--warn)':'var(--danger)'}">${r.surv}%</strong></div></div></div><div class="rbody"><div class="rs">Incident Description</div><div class="rtx">${r.desc}</div><div class="rs">Attached CCTV Footage</div><div class="ftg">${r.cameras.map((cc,ci)=>`<div class="fth" onclick="openFeed(${ci})"><canvas class="ftc" id="rcanvas-${r.id}-${ci}" width="320" height="180"></canvas><div class="ftl">${cc} · ${r.dt}</div></div>`).join('')}</div><div class="rs">Preventive Measures</div><div class="ml">${r.prev.map(m=>`<div class="ms prev"><div class="mic">🛡</div><div class="mt">${m}</div></div>`).join('')}</div><div class="rs">Remedial Measures</div><div class="ml">${r.remed.map(m=>`<div class="ms remed"><div class="mic">🔧</div><div class="mt">${m}</div></div>`).join('')}</div><div class="frow g8" style="justify-content:flex-end;margin-top:14px"><button class="btn bsm bg">📥 PDF</button><button class="btn bsm bg">📧 Email</button><button class="btn bsm ba">✏ Edit</button></div></div></div>`).join('');
+  requestAnimationFrame(()=>{REPS.forEach(r=>{r.cameras.forEach((_,ci)=>{const c=document.getElementById(`rcanvas-${r.id}-${ci}`);if(c)drawScene(c,FS[ci],true);});});});
+}
+function renderTable(){
+  const el=document.getElementById('table-body');if(!el)return;
+  el.innerHTML=TD.map(r=>{
+    const sc=r.surv>=80?'hi':r.surv>=55?'md':'lo';
+    const sc2=r.surv>=80?'var(--accent)':r.surv>=55?'var(--warn)':'var(--danger)';
+    const stc=r.stat==='Active'?'active':r.stat==='Resolved'?'resolved':'closed';
+    return`<tr><td class="tid">${r.id}</td><td class="mono" style="font-size:11px">${r.dt}</td><td class="tbold">${r.loc}</td><td>${r.type}</td><td><span class="bdg ${r.sev}">${r.sev}</span></td><td class="mono" style="text-align:center">${r.veh}</td><td class="mono" style="text-align:center;color:${r.cas>0?'var(--danger)':'var(--accent)'}">${r.cas}</td><td><div class="sw"><div class="sp" style="color:${sc2}">${r.surv}%</div><div class="stk"><div class="sf ${sc}" style="width:${r.surv}%"></div></div></div></td><td><span class="bdg ${stc}">${r.stat}</span></td><td class="mut" style="font-size:11px">${r.obs}</td></tr>`;
+  }).join('');
+}
+
+/* CHARTS */
+let ci=false;
+const CD={color:'rgba(196,212,228,.65)',grid:'rgba(28,39,54,.55)',tick:{color:'rgba(82,106,128,.6)',font:{family:'IBM Plex Mono',size:10}}};
+function initCharts(){
+  if(ci)return;ci=true;
+  Chart.defaults.color=CD.color;Chart.defaults.font.family='IBM Plex Mono';
+  new Chart(document.getElementById('chart-trend'),{type:'line',data:{labels:['Sep','Oct','Nov','Dec','Jan','Feb'],datasets:[{label:'Accidents',data:[18,22,14,28,19,13],borderColor:'var(--accent)',backgroundColor:'rgba(0,201,167,.07)',tension:.4,fill:true,pointBackgroundColor:'var(--accent)',pointRadius:4},{label:'Fatalities',data:[3,4,2,5,2,1],borderColor:'var(--danger)',backgroundColor:'rgba(240,58,95,.06)',tension:.4,fill:true,pointBackgroundColor:'var(--danger)',pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true,boxWidth:8}}},scales:{x:{grid:{color:CD.grid},ticks:CD.tick},y:{grid:{color:CD.grid},ticks:CD.tick}}}});
+  new Chart(document.getElementById('chart-types'),{type:'doughnut',data:{labels:['Rear-end','Head-on','Side-swipe','Rollover','Pedestrian','Other'],datasets:[{data:[34,18,22,12,8,6],backgroundColor:['rgba(0,201,167,.72)','rgba(240,58,95,.72)','rgba(240,184,0,.65)','rgba(48,144,240,.65)','rgba(160,80,240,.55)','rgba(90,120,140,.5)'],borderColor:'var(--card)',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'right',labels:{usePointStyle:true,boxWidth:8,padding:10,font:{size:11}}}}}});
+  new Chart(document.getElementById('chart-hourly'),{type:'bar',data:{labels:['00','02','04','06','08','10','12','14','16','18','20','22'],datasets:[{label:'Incidents',data:[2,1,3,5,9,6,7,12,10,8,11,6],backgroundColor(ctx){const v=ctx.raw;return v>=10?'rgba(240,58,95,.68)':v>=7?'rgba(240,184,0,.62)':'rgba(0,201,167,.55)'},borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:CD.grid},ticks:CD.tick},y:{grid:{color:CD.grid},ticks:CD.tick}}}});
+  new Chart(document.getElementById('chart-survival'),{type:'bar',data:{labels:['Critical','Moderate','Minor'],datasets:[{label:'Survival %',data:[52,81,97],backgroundColor:['rgba(240,58,95,.65)','rgba(240,184,0,.62)','rgba(0,201,167,.68)'],borderRadius:6},{label:'Fatality %',data:[48,19,3],backgroundColor:['rgba(240,58,95,.18)','rgba(240,184,0,.18)','rgba(0,201,167,.18)'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true,boxWidth:8}}},scales:{x:{grid:{color:CD.grid},ticks:CD.tick},y:{grid:{color:CD.grid},max:100,ticks:{...CD.tick,callback:v=>v+'%'}}}}});
+}
+
+/* UI */
+function switchTab(tab,el){
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  const s=document.getElementById('sec-'+tab);if(s)s.classList.add('active');
+  if(tab==='analytics')setTimeout(()=>{initCharts();renderTable();},80);
+  if(tab==='reports')setTimeout(()=>renderReports(),80);
+  if(tab==='alerts')renderAlerts();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openReportModal(){document.getElementById('rep-datetime').value=new Date().toISOString().slice(0,16);openModal('report-modal');}
+let mIv=null;
+function openFeed(i){
+  const titles=['CAM-01 — NH-44 JUNCTION A','CAM-02 — RING ROAD WEST KM 12','CAM-03 — HIGHWAY OVERPASS','CAM-04 — CITY BYPASS EXIT-4'];
+  document.getElementById('feed-modal-title').textContent=titles[i]||'Camera '+i;
+  const mc=document.getElementById('feed-modal-canvas');mc.width=840;mc.height=472;
+  drawScene(mc,FS[i]||FS[0],false);
+  openModal('feed-modal');
+  if(mIv)clearInterval(mIv);
+  mIv=setInterval(()=>{
+    if(!document.getElementById('feed-modal').classList.contains('open')){clearInterval(mIv);mIv=null;return;}
+    drawScene(mc,FS[i]||FS[0],false);
+  },FI);
+}
+function toggleDispatch(i,btn){
+  AUTH[i].dispatched=!AUTH[i].dispatched;
+  btn.textContent=AUTH[i].dispatched?'📡 Dispatched':'🚀 Dispatch';
+  btn.classList.toggle('sent',AUTH[i].dispatched);
+  showToast(AUTH[i].dispatched?'success':'info',AUTH[i].dispatched?'Unit Dispatched':'Unit Recalled',AUTH[i].name+(AUTH[i].dispatched?' en route.':" returned to base."),AUTH[i].dispatched?'🚁':'↩');
+}
+function resolveAlert(id,btn){btn.closest('.ac').style.opacity='.45';btn.disabled=true;btn.textContent='Resolved';showToast('success','Incident Resolved',id+' marked resolved.','✅');}
+function simulateIncident(){showToast('danger','⚠ New Incident!','Collision at CAM-03 — Highway Overpass!','🚨');setTimeout(()=>{document.getElementById('acc-count').textContent='4';},900);}
+function triggerEmergency(){showToast('danger','🚨 MASS ALERT','All authorities notified. Emergency protocol active.','📡');}
+function generateReport(){showToast('success','Report Generated','Incident summary queued for review.','📄');setTimeout(()=>switchTab('reports',document.querySelector('.nt:nth-child(3)')),1400);}
+function generateDetailReport(id){showToast('info','Report Loading',id+' being generated…','📋');}
+function submitReport(){const loc=document.getElementById('rep-location').value||'Unknown';closeModal('report-modal');showToast('success','Report Saved','Incident report for '+loc+' saved.','🛡');}
+function fakeUpload(){showToast('info','Upload Ready','Footage upload connects to CCTV storage API.','📹');}
+function showNotifs(){showToast('warn','3 Active Alerts','NH-44 · Ring Road West · City Bypass','🔔');}
+
+const TC={success:'var(--accent)',danger:'var(--danger)',warn:'var(--warn)',info:'var(--info)'};
+function showToast(type,title,msg,icon){
+  const w=document.getElementById('toast-wrap'),t=document.createElement('div');
+  t.className='toast';t.style.borderLeftColor=TC[type]||'var(--border2)';
+  t.innerHTML=`<div class="ttico">${icon}</div><div><div class="ttit">${title}</div><div class="tmsg">${msg}</div></div>`;
+  w.appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),300);},3800);
+}
+
+function tick(){const el=document.getElementById('sync-time');if(el)el.textContent=new Date().toLocaleTimeString('en-GB');}
+
+window.addEventListener('load',()=>{
+  renderSpeedList();renderNews();renderDispatch();renderTimeline();renderAlerts();initMap();
+  setTimeout(()=>startLoop(),180);
+  setInterval(tick,1000);tick();
+  setInterval(()=>{
+    SD.forEach(v=>{v.speed=Math.max(35,Math.min(160,v.speed+Math.round((Math.random()-.5)*10)));v.status=v.speed>v.limit*1.25?'dng':v.speed>v.limit?'warn':'safe';});
+    renderSpeedList();
+  },2600);
+  document.querySelectorAll('.mo').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+  setTimeout(()=>showToast('success','AEGIS Online','All 12 cameras active. Monitoring in progress.','🛡'),700);
+  setTimeout(()=>showToast('danger','Active Alert','INC-2026-0147 — NH-44 requires attention.','🚨'),2100);
+});
+</script>
+</body>
+</html>
